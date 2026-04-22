@@ -4405,6 +4405,7 @@ do
 
             return tonumber(string.format("%." .. Slider.Rounding .. "f", Value))
         end
+        Slider.Value = Round(Slider.Value)
 
         function Slider:GetValueFromXScale(X)
             return Round(Library:MapValue(X, 0, 1, Slider.Min, Slider.Max))
