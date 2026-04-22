@@ -4357,7 +4357,15 @@ do
             Library.RegistryMap[Fill].Properties.BackgroundColor3 = Slider.Disabled and "DisabledAccentColor" or "AccentColor"
             Library.RegistryMap[Fill].Properties.BorderColor3 = Slider.Disabled and "DisabledOutlineColor" or "AccentColorDark"
         end
-        
+
+        local function Round(Value)
+            if Slider.Rounding == 0 then
+                return math.floor(Value)
+            end
+
+            return tonumber(string.format("%." .. Slider.Rounding .. "f", Value))
+        end
+
         function Slider:Display()
             local CustomDisplayText = nil
             if Info.FormatDisplayValue then
@@ -4367,7 +4375,7 @@ do
             if CustomDisplayText then
                 DisplayLabel.Text = tostring(CustomDisplayText)
             else
-                local FormattedValue = (Slider.Value == 0 or Slider.Value == -0) and "0" or tostring(Slider.Value)
+                local FormattedValue = (Slider.Value == 0 or Slider.Value == -0) and "0" or Round(Slider.Value)
                 if Info.Compact then
                     DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, FormattedValue, Slider.Suffix)
 
@@ -4397,15 +4405,6 @@ do
             
             -- Library:SafeCallback(Func, Slider.Value);
         end
-
-        local function Round(Value)
-            if Slider.Rounding == 0 then
-                return math.floor(Value)
-            end
-
-            return tonumber(string.format("%." .. Slider.Rounding .. "f", Value))
-        end
-        Slider.Value = Round(Slider.Value)
 
         function Slider:GetValueFromXScale(X)
             return Round(Library:MapValue(X, 0, 1, Slider.Min, Slider.Max))
