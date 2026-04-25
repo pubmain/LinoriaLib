@@ -773,6 +773,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
 
     local Label = Library:CreateLabel({
         Position = UDim2.fromOffset(3, 1);
+        RichText = true,
         
         TextSize = 14;
         Text = InfoStr;
