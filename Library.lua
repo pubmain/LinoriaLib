@@ -1776,7 +1776,7 @@ do
                     end
 
                     -- Escape --
-                    if Input.KeyCode == Enum.KeyCode.Escape then
+                    if Input.KeyCode == Enum.KeyCode.Delete then
                         break
                     end
 
@@ -1803,7 +1803,7 @@ do
                                     end
 
                                     -- Escape --
-                                    if Input.KeyCode == Enum.KeyCode.Escape then
+                                    if Input.KeyCode == Enum.KeyCode.Delete then
                                         break
                                     end
 
@@ -1833,10 +1833,10 @@ do
                 if SpecialKeysInput[Input.UserInputType] ~= nil then
                     Key = SpecialKeysInput[Input.UserInputType]
                 elseif Input.UserInputType == Enum.UserInputType.Keyboard then
-                    Key = Input.KeyCode == Enum.KeyCode.Escape and "None" or Input.KeyCode.Name
+                    Key = Input.KeyCode == Enum.KeyCode.Delete and "None" or Input.KeyCode.Name
                 end
 
-                ActiveModifiers = if Input.KeyCode == Enum.KeyCode.Escape or Key == "Unknown" then {} else ActiveModifiers
+                ActiveModifiers = if Input.KeyCode == Enum.KeyCode.Delete or Key == "Unknown" then {} else ActiveModifiers
 
                 KeyPicker.Toggled = false
                 KeyPicker:SetValue({ Key, KeyPicker.Mode, ActiveModifiers })
