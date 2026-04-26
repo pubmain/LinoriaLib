@@ -478,7 +478,7 @@ function Library:SafeCallback(Func, ...)
     end
 
     local Result = table.pack(xpcall(Func, function(Error)
-        task.defer(error, debug.traceback(Error, 2))
+        task.spawn(error, debug.traceback(Error, 2))
         if Library.NotifyOnError then
             Library:Notify(Error)
         end
