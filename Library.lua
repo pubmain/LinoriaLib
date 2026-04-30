@@ -7895,10 +7895,8 @@ end
     
     function Window:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end
-        if Fading then return end
 
         local FadeTime = WindowInfo.MenuFadeTime
-        Fading = true
         Toggled = (not Toggled)
 
         Library.Toggled = Toggled
@@ -7965,46 +7963,7 @@ end
             end)
         end
 
-        for _, Desc in next, Outer:GetDescendants() do
-            local Properties = {}
-
-            if Desc:IsA("ImageLabel") then
-                table.insert(Properties, "ImageTransparency")
-                table.insert(Properties, "BackgroundTransparency")
-
-            elseif Desc:IsA("TextLabel") or Desc:IsA("TextBox") then
-                table.insert(Properties, "TextTransparency")
-
-            elseif Desc:IsA("Frame") or Desc:IsA("ScrollingFrame") then
-                table.insert(Properties, "BackgroundTransparency")
-                
-            elseif Desc:IsA("UIStroke") then
-                table.insert(Properties, "Transparency")
-            end
-
-            local Cache = TransparencyCache[Desc]
-
-            if (not Cache) then
-                Cache = {}
-                TransparencyCache[Desc] = Cache
-            end
-
-            for _, Prop in next, Properties do
-                if not Cache[Prop] then
-                    Cache[Prop] = Desc[Prop]
-                end
-
-                if Cache[Prop] == 1 then
-                    continue
-                end
-
-                TweenService:Create(Desc, TweenInfo.new(FadeTime, Enum.EasingStyle.Linear), { [Prop] = Toggled and Cache[Prop] or 1 }):Play()
-            end
-        end
-
-        task.wait(FadeTime)
         Outer.Visible = Toggled
-        Fading = false
     end
 
     function Library:Toggle(Toggling)
