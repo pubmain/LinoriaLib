@@ -1600,15 +1600,14 @@ do
         end
 
         function KeyPicker:Update()
-            if Info.NoUI then
-                return
-            end
-
             local State = KeyPicker:GetState()
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == "Toggle"
 
             if KeyPicker.SyncToggleState and ParentObj.Value ~= State then
                 ParentObj:SetValue(State)
+            end
+            if Info.NoUI then
+                return
             end
 
             if KeybindsToggle.Loaded then
