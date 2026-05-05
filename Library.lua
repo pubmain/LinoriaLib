@@ -7526,7 +7526,7 @@ end
             TabButton.BackgroundColor3 = Library.MainColor
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = "MainColor"
             TabFrame.Visible = true
-            TabFrame.Parent = TabContainer
+            -- TabFrame.Parent = TabContainer
 
             Tab:Resize()
         end
@@ -7537,7 +7537,7 @@ end
             TabButton.BackgroundColor3 = Library.BackgroundColor
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = "BackgroundColor"
             TabFrame.Visible = false
-            TabFrame.Parent = nil
+            -- TabFrame.Parent = nil
         end
         Tab.Hide = Tab.HideTab
 
