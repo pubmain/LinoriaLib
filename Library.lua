@@ -82,8 +82,13 @@ ModalElement.Parent = ScreenGui
 
 local LibraryMainOuterFrame = nil
 
+local Elements = {}
+local Keybinds = {}
+local Sliders = {}
+local ColorPickers = {}
+local Inputs = {}
+local Dropdowns = {}
 local Toggles = {}
-local Options = {}
 local Labels = {}
 local Buttons = {}
 local Tooltips = {}
@@ -291,10 +296,17 @@ local Library = {
     SaveManager = nil;
     ThemeManager = nil;
 
+    -- compatibility
+    Options = Elements;
     -- for better usage --
     Toggles = Toggles;
-    Options = Options;
+    Elements = Elements;
     Labels = Labels;
+    Inputs = Inputs;
+    Dropdowns = Dropdowns;
+    ColorPickers = ColorPickers;
+    Keybinds = Keybinds;
+    Sliders = Sliders;
     Buttons = Buttons;
     Dialogues = Dialogues;
     ActiveDialog = nil;
@@ -1157,7 +1169,7 @@ local BaseAddons = {}
 do
     local BaseAddonsFuncs = {}
 
-        function BaseAddonsFuncs:AddKeyPicker(Idx, Info)
+    function BaseAddonsFuncs:AddKeyPicker(Idx, Info)
         local ParentObj = self
         local ToggleLabel = self.TextLabel
         --local Container = self.Container;
@@ -1848,7 +1860,7 @@ do
                 local visible = KeyPicker:GetModePickerVisibility()
                 
                 if visible == false then
-                    for _, option in next, Options do
+                    for _, option in next, Elements do
                         if option.Type == "KeyPicker" then
                             option:SetModePickerVisibility(false)
                         end
@@ -1922,7 +1934,8 @@ do
         KeyPicker.Default = KeyPicker.Value
         KeyPicker.DefaultModifiers = table.clone(KeyPicker.Modifiers or {})
 
-        Options[Idx] = KeyPicker
+        Elements[Idx] = KeyPicker
+        Keybinds[Idx] = KeyPicker
 
         return self
     end
@@ -2573,7 +2586,8 @@ do
 
         ColorPicker.Default = ColorPicker.Value
 
-        Options[Idx] = ColorPicker
+        ColorPickers[Idx] = ColorPicker
+        Elements[Idx] = ColorPicker
 
         return self
     end
@@ -3235,7 +3249,7 @@ do
         Dropdown.Default = Defaults
         Dropdown.DefaultValues = Dropdown.Values
 
-        Options[Idx] = Dropdown
+        Elements[Idx] = Dropdown
 
         return self
     end
@@ -3467,8 +3481,10 @@ do
         if Data.Idx then
             -- Options[Data.Idx] = Label;
             Labels[Data.Idx] = Label
+            Elements[Data.Idx] = Label
         else
             table.insert(Labels, Label)
+            table.insert(Elements, Label)
         end
 
         return Label
@@ -3731,6 +3747,7 @@ do
 
         table.insert(Groupbox.Elements, Button)
         table.insert(Buttons, Button)
+        table.insert(Elements, Button)
 
         return Button
     end
@@ -3977,7 +3994,8 @@ do
         Textbox.Default = Textbox.Value
 
         table.insert(Groupbox.Elements, Textbox)
-        Options[Idx] = Textbox
+        Inputs[Idx] = Textbox
+        Elements[Idx] = Textbox
 
         return Textbox
     end
@@ -4207,6 +4225,7 @@ do
         Toggle.Default = Toggle.Value
 
         table.insert(Groupbox.Elements, Toggle)
+        Elements[Idx] = Toggle
         Toggles[Idx] = Toggle
 
         Library:UpdateDependencyBoxes()
@@ -4564,7 +4583,8 @@ do
         Slider.Default = Slider.Value
 
         table.insert(Groupbox.Elements, Slider)
-        Options[Idx] = Slider
+        Sliders[Idx] = Slider
+        Elements[Idx] = Slider
 
         return Slider
     end
@@ -5234,7 +5254,8 @@ do
         Dropdown.DefaultValues = Dropdown.Values
 
         table.insert(Groupbox.Elements, Dropdown)
-        Options[Idx] = Dropdown
+        Dropdowns[Idx] = Dropdown
+        Elements[Idx] = Dropdown
 
         return Dropdown
     end
@@ -5518,7 +5539,7 @@ do
         Viewport.Container = Container
 
         table.insert(Groupbox.Elements, Viewport)
-        Options[Idx] = Viewport
+        Elements[Idx] = Viewport
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5677,7 +5698,7 @@ do
         Image.Container = Container
 
         table.insert(Groupbox.Elements, Image)
-        Options[Idx] = Image
+        Elements[Idx] = Image
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5810,7 +5831,7 @@ do
         Video.VideoFrame = VideoFrameInstance
 
         table.insert(Groupbox.Elements, Video)
-        Options[Idx] = Video
+        Elements[Idx] = Video
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5892,7 +5913,7 @@ do
         Passthrough.Container = Container
 
         table.insert(Groupbox.Elements, Passthrough)
-        Options[Idx] = Passthrough
+        Elements[Idx] = Passthrough
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -7949,7 +7970,7 @@ end
             end
         end
 
-        for _, Option in Options do
+        for _, Option in Elements do
             task.spawn(function()
                 if Option.Type == "Dropdown" then
                     Option:CloseDropdown()
@@ -8145,7 +8166,7 @@ local function OnPlayerChange()
     local PlayerList, ExcludedPlayerList = GetPlayers(false, true), GetPlayers(true, true)
     local StringPlayerList, StringExcludedPlayerList = GetPlayers(false, false), GetPlayers(true, false)
 
-    for _, Value in next, Options do
+    for _, Value in next, Elements do
         if Value.SetValues and Value.Type == "Dropdown" and Value.SpecialType == "Player" then
             Value:SetValues(
                 if Value.ReturnInstanceInstead then
@@ -8165,7 +8186,7 @@ local function OnTeamChange()
     local TeamList = GetTeams(false)
     local StringTeamList = GetTeams(true)
 
-    for _, Value in next, Options do
+    for _, Value in next, Elements do
         if Value.SetValues and Value.Type == "Dropdown" and Value.SpecialType == "Team" then
             Value:SetValues(if Value.ReturnInstanceInstead then TeamList else StringTeamList)
         end
