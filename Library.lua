@@ -82,20 +82,25 @@ ModalElement.Parent = ScreenGui
 
 local LibraryMainOuterFrame = nil
 
+local Elements = {}
+local Keybinds = {}
+local Sliders = {}
+local ColorPickers = {}
+local Inputs = {}
+local Dropdowns = {}
 local Toggles = {}
-local Options = {}
 local Labels = {}
 local Buttons = {}
 local Tooltips = {}
 local Dialogues = {}
 
 -- https://github.com/deividcomsono/Obsidian/blob/main/Library.lua#L30
-local BaseURL = "https://raw.githubusercontent.com/mstudio45/LinoriaLib/refs/heads/main/"
+local BaseURL = "https://raw.githubusercontent.com/pubmain/LinoriaLib/refs/heads/main/"
 local CustomImageManager = {}
 local CustomImageManagerAssets = {
     Cursor = {
         RobloxId = 9619665977,
-        Path = "LinoriaLib/assets/Cursor.png",
+        Path = "CosmicHub/assets/Cursor.png",
         URL = BaseURL .. "assets/Cursor.png",
 
         Id = nil,
@@ -103,7 +108,7 @@ local CustomImageManagerAssets = {
 
     DropdownArrow = {
         RobloxId = 6282522798,
-        Path = "LinoriaLib/assets/DropdownArrow.png",
+        Path = "CosmicHub/assets/DropdownArrow.png",
         URL = BaseURL .. "assets/DropdownArrow.png",
 
         Id = nil,
@@ -111,7 +116,7 @@ local CustomImageManagerAssets = {
 
     Checker = {
         RobloxId = 12977615774,
-        Path = "LinoriaLib/assets/Checker.png",
+        Path = "CosmicHub/assets/Checker.png",
         URL = BaseURL .. "assets/Checker.png",
 
         Id = nil,
@@ -119,7 +124,7 @@ local CustomImageManagerAssets = {
 
     CheckerLong = {
         RobloxId = 12978095818,
-        Path = "LinoriaLib/assets/CheckerLong.png",
+        Path = "CosmicHub/assets/CheckerLong.png",
         URL = BaseURL .. "assets/CheckerLong.png",
 
         Id = nil,
@@ -127,7 +132,7 @@ local CustomImageManagerAssets = {
 
     SaturationMap = {
         RobloxId = 4155801252,
-        Path = "LinoriaLib/assets/SaturationMap.png",
+        Path = "CosmicHub/assets/SaturationMap.png",
         URL = BaseURL .. "assets/SaturationMap.png",
 
         Id = nil,
@@ -291,16 +296,22 @@ local Library = {
     SaveManager = nil;
     ThemeManager = nil;
 
+    -- compatibility
+    Options = Elements;
     -- for better usage --
     Toggles = Toggles;
-    Options = Options;
+    Elements = Elements;
     Labels = Labels;
+    Inputs = Inputs;
+    Dropdowns = Dropdowns;
+    ColorPickers = ColorPickers;
+    Keybinds = Keybinds;
+    Sliders = Sliders;
     Buttons = Buttons;
     Dialogues = Dialogues;
     ActiveDialog = nil;
 
     ImageManager = CustomImageManager;
-    ShowCursorBinding = string.sub(tostring({}), 10);
 }
 
 if RunService:IsStudio() then
@@ -479,7 +490,7 @@ function Library:SafeCallback(Func, ...)
     end
 
     local Result = table.pack(xpcall(Func, function(Error)
-        task.defer(error, debug.traceback(Error, 2))
+        task.spawn(error, debug.traceback(Error, 2))
         if Library.NotifyOnError then
             Library:Notify(Error)
         end
@@ -774,6 +785,7 @@ function Library:AddToolTip(InfoStr, DisabledInfoStr, HoverInstance)
 
     local Label = Library:CreateLabel({
         Position = UDim2.fromOffset(3, 1);
+        RichText = true,
         
         TextSize = 14;
         Text = InfoStr;
@@ -1157,7 +1169,7 @@ local BaseAddons = {}
 do
     local BaseAddonsFuncs = {}
 
-        function BaseAddonsFuncs:AddKeyPicker(Idx, Info)
+    function BaseAddonsFuncs:AddKeyPicker(Idx, Info)
         local ParentObj = self
         local ToggleLabel = self.TextLabel
         --local Container = self.Container;
@@ -1600,15 +1612,14 @@ do
         end
 
         function KeyPicker:Update()
-            if Info.NoUI then
-                return
-            end
-
             local State = KeyPicker:GetState()
             local ShowToggle = Library.ShowToggleFrameInKeybinds and KeyPicker.Mode == "Toggle"
 
             if KeyPicker.SyncToggleState and ParentObj.Value ~= State then
                 ParentObj:SetValue(State)
+            end
+            if Info.NoUI then
+                return
             end
 
             if KeybindsToggle.Loaded then
@@ -1776,7 +1787,7 @@ do
                     end
 
                     -- Escape --
-                    if Input.KeyCode == Enum.KeyCode.Escape then
+                    if Input.KeyCode == Enum.KeyCode.Delete then
                         break
                     end
 
@@ -1803,7 +1814,7 @@ do
                                     end
 
                                     -- Escape --
-                                    if Input.KeyCode == Enum.KeyCode.Escape then
+                                    if Input.KeyCode == Enum.KeyCode.Delete then
                                         break
                                     end
 
@@ -1833,10 +1844,10 @@ do
                 if SpecialKeysInput[Input.UserInputType] ~= nil then
                     Key = SpecialKeysInput[Input.UserInputType]
                 elseif Input.UserInputType == Enum.UserInputType.Keyboard then
-                    Key = Input.KeyCode == Enum.KeyCode.Escape and "None" or Input.KeyCode.Name
+                    Key = Input.KeyCode == Enum.KeyCode.Delete and "None" or Input.KeyCode.Name
                 end
 
-                ActiveModifiers = if Input.KeyCode == Enum.KeyCode.Escape or Key == "Unknown" then {} else ActiveModifiers
+                ActiveModifiers = if Input.KeyCode == Enum.KeyCode.Delete or Key == "Unknown" then {} else ActiveModifiers
 
                 KeyPicker.Toggled = false
                 KeyPicker:SetValue({ Key, KeyPicker.Mode, ActiveModifiers })
@@ -1849,7 +1860,7 @@ do
                 local visible = KeyPicker:GetModePickerVisibility()
                 
                 if visible == false then
-                    for _, option in next, Options do
+                    for _, option in next, Elements do
                         if option.Type == "KeyPicker" then
                             option:SetModePickerVisibility(false)
                         end
@@ -1923,7 +1934,8 @@ do
         KeyPicker.Default = KeyPicker.Value
         KeyPicker.DefaultModifiers = table.clone(KeyPicker.Modifiers or {})
 
-        Options[Idx] = KeyPicker
+        Elements[Idx] = KeyPicker
+        Keybinds[Idx] = KeyPicker
 
         return self
     end
@@ -2574,7 +2586,10 @@ do
 
         ColorPicker.Default = ColorPicker.Value
 
-        Options[Idx] = ColorPicker
+        ColorPickers[Idx] = ColorPicker
+        Elements[Idx] = ColorPicker
+
+        task.defer(RunCallback)
 
         return self
     end
@@ -3236,7 +3251,7 @@ do
         Dropdown.Default = Defaults
         Dropdown.DefaultValues = Dropdown.Values
 
-        Options[Idx] = Dropdown
+        Elements[Idx] = Dropdown
 
         return self
     end
@@ -3468,8 +3483,10 @@ do
         if Data.Idx then
             -- Options[Data.Idx] = Label;
             Labels[Data.Idx] = Label
+            Elements[Data.Idx] = Label
         else
             table.insert(Labels, Label)
+            table.insert(Elements, Label)
         end
 
         return Label
@@ -3732,6 +3749,7 @@ do
 
         table.insert(Groupbox.Elements, Button)
         table.insert(Buttons, Button)
+        table.insert(Elements, Button)
 
         return Button
     end
@@ -3978,7 +3996,8 @@ do
         Textbox.Default = Textbox.Value
 
         table.insert(Groupbox.Elements, Textbox)
-        Options[Idx] = Textbox
+        Inputs[Idx] = Textbox
+        Elements[Idx] = Textbox
 
         return Textbox
     end
@@ -4208,6 +4227,7 @@ do
         Toggle.Default = Toggle.Value
 
         table.insert(Groupbox.Elements, Toggle)
+        Elements[Idx] = Toggle
         Toggles[Idx] = Toggle
 
         Library:UpdateDependencyBoxes()
@@ -4358,7 +4378,15 @@ do
             Library.RegistryMap[Fill].Properties.BackgroundColor3 = Slider.Disabled and "DisabledAccentColor" or "AccentColor"
             Library.RegistryMap[Fill].Properties.BorderColor3 = Slider.Disabled and "DisabledOutlineColor" or "AccentColorDark"
         end
-        
+
+        local function Round(Value)
+            if Slider.Rounding == 0 then
+                return math.floor(Value)
+            end
+
+            return tonumber(string.format("%." .. Slider.Rounding .. "f", Value))
+        end
+
         function Slider:Display()
             local CustomDisplayText = nil
             if Info.FormatDisplayValue then
@@ -4368,7 +4396,7 @@ do
             if CustomDisplayText then
                 DisplayLabel.Text = tostring(CustomDisplayText)
             else
-                local FormattedValue = (Slider.Value == 0 or Slider.Value == -0) and "0" or tostring(Slider.Value)
+                local FormattedValue = (Slider.Value == 0 or Slider.Value == -0) and "0" or Round(Slider.Value)
                 if Info.Compact then
                     DisplayLabel.Text = string.format("%s: %s%s%s", Slider.Text, Slider.Prefix, FormattedValue, Slider.Suffix)
 
@@ -4397,14 +4425,6 @@ do
             -- end;
             
             -- Library:SafeCallback(Func, Slider.Value);
-        end
-
-        local function Round(Value)
-            if Slider.Rounding == 0 then
-                return math.floor(Value)
-            end
-
-            return tonumber(string.format("%." .. Slider.Rounding .. "f", Value))
         end
 
         function Slider:GetValueFromXScale(X)
@@ -4565,7 +4585,10 @@ do
         Slider.Default = Slider.Value
 
         table.insert(Groupbox.Elements, Slider)
-        Options[Idx] = Slider
+        Sliders[Idx] = Slider
+        Elements[Idx] = Slider
+
+        task.defer(Library.SafeCallback, Library, Slider.Callback, Slider.Default)
 
         return Slider
     end
@@ -5235,7 +5258,8 @@ do
         Dropdown.DefaultValues = Dropdown.Values
 
         table.insert(Groupbox.Elements, Dropdown)
-        Options[Idx] = Dropdown
+        Dropdowns[Idx] = Dropdown
+        Elements[Idx] = Dropdown
 
         return Dropdown
     end
@@ -5519,7 +5543,7 @@ do
         Viewport.Container = Container
 
         table.insert(Groupbox.Elements, Viewport)
-        Options[Idx] = Viewport
+        Elements[Idx] = Viewport
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5678,7 +5702,7 @@ do
         Image.Container = Container
 
         table.insert(Groupbox.Elements, Image)
-        Options[Idx] = Image
+        Elements[Idx] = Image
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5811,7 +5835,7 @@ do
         Video.VideoFrame = VideoFrameInstance
 
         table.insert(Groupbox.Elements, Video)
-        Options[Idx] = Video
+        Elements[Idx] = Video
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -5893,7 +5917,7 @@ do
         Passthrough.Container = Container
 
         table.insert(Groupbox.Elements, Passthrough)
-        Options[Idx] = Passthrough
+        Elements[Idx] = Passthrough
 
         Library:UpdateDependencyBoxes()
         Library:UpdateDependencyGroupboxes()
@@ -6229,6 +6253,7 @@ do
         Position = UDim2.new(0, 5, 0, 0);
         Size = UDim2.new(1, -4, 1, 0);
         TextSize = 14;
+        RichText = true,
         TextXAlignment = Enum.TextXAlignment.Left;
         ZIndex = 203;
         Parent = InnerFrame;
@@ -7527,6 +7552,7 @@ end
             TabButton.BackgroundColor3 = Library.MainColor
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = "MainColor"
             TabFrame.Visible = true
+            -- TabFrame.Parent = TabContainer
 
             Tab:Resize()
         end
@@ -7537,6 +7563,7 @@ end
             TabButton.BackgroundColor3 = Library.BackgroundColor
             Library.RegistryMap[TabButton].Properties.BackgroundColor3 = "BackgroundColor"
             TabFrame.Visible = false
+            -- TabFrame.Parent = nil
         end
         Tab.Hide = Tab.HideTab
 
@@ -7895,10 +7922,8 @@ end
     
     function Window:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end
-        if Fading then return end
 
         local FadeTime = WindowInfo.MenuFadeTime
-        Fading = true
         Toggled = (not Toggled)
 
         Library.Toggled = Toggled
@@ -7924,9 +7949,8 @@ end
                     CursorOutline.Visible = Library.ShowCustomCursor
                     
                     local OldMouseIconState = InputService.MouseIconEnabled
-                    local ShowCursorBinding = Library.ShowCursorBinding
-                    pcall(function() RunService:UnbindFromRenderStep(ShowCursorBinding) end)
-                    RunService:BindToRenderStep(ShowCursorBinding, Enum.RenderPriority.Camera.Value - 1, function()
+                    pcall(function() RunService:UnbindFromRenderStep("LinoriaCursor") end)
+                    RunService:BindToRenderStep("LinoriaCursor", Enum.RenderPriority.Camera.Value - 1, function()
                         InputService.MouseIconEnabled = not Library.ShowCustomCursor
                         local mPos = InputService:GetMouseLocation()
                         local X, Y = mPos.X, mPos.Y
@@ -7944,14 +7968,14 @@ end
                             InputService.MouseIconEnabled = OldMouseIconState
                             if Cursor then Cursor:Destroy() end
                             if CursorOutline then CursorOutline:Destroy() end
-                            RunService:UnbindFromRenderStep(ShowCursorBinding)
+                            RunService:UnbindFromRenderStep("LinoriaCursor")
                         end
                     end)
                 end))
             end
         end
 
-        for _, Option in Options do
+        for _, Option in Elements do
             task.spawn(function()
                 if Option.Type == "Dropdown" then
                     Option:CloseDropdown()
@@ -7966,46 +7990,7 @@ end
             end)
         end
 
-        for _, Desc in next, Outer:GetDescendants() do
-            local Properties = {}
-
-            if Desc:IsA("ImageLabel") then
-                table.insert(Properties, "ImageTransparency")
-                table.insert(Properties, "BackgroundTransparency")
-
-            elseif Desc:IsA("TextLabel") or Desc:IsA("TextBox") then
-                table.insert(Properties, "TextTransparency")
-
-            elseif Desc:IsA("Frame") or Desc:IsA("ScrollingFrame") then
-                table.insert(Properties, "BackgroundTransparency")
-                
-            elseif Desc:IsA("UIStroke") then
-                table.insert(Properties, "Transparency")
-            end
-
-            local Cache = TransparencyCache[Desc]
-
-            if (not Cache) then
-                Cache = {}
-                TransparencyCache[Desc] = Cache
-            end
-
-            for _, Prop in next, Properties do
-                if not Cache[Prop] then
-                    Cache[Prop] = Desc[Prop]
-                end
-
-                if Cache[Prop] == 1 then
-                    continue
-                end
-
-                TweenService:Create(Desc, TweenInfo.new(FadeTime, Enum.EasingStyle.Linear), { [Prop] = Toggled and Cache[Prop] or 1 }):Play()
-            end
-        end
-
-        task.wait(FadeTime)
         Outer.Visible = Toggled
-        Fading = false
     end
 
     function Library:Toggle(Toggling)
@@ -8186,7 +8171,7 @@ local function OnPlayerChange()
     local PlayerList, ExcludedPlayerList = GetPlayers(false, true), GetPlayers(true, true)
     local StringPlayerList, StringExcludedPlayerList = GetPlayers(false, false), GetPlayers(true, false)
 
-    for _, Value in next, Options do
+    for _, Value in next, Elements do
         if Value.SetValues and Value.Type == "Dropdown" and Value.SpecialType == "Player" then
             Value:SetValues(
                 if Value.ReturnInstanceInstead then
@@ -8206,7 +8191,7 @@ local function OnTeamChange()
     local TeamList = GetTeams(false)
     local StringTeamList = GetTeams(true)
 
-    for _, Value in next, Options do
+    for _, Value in next, Elements do
         if Value.SetValues and Value.Type == "Dropdown" and Value.SpecialType == "Team" then
             Value:SetValues(if Value.ReturnInstanceInstead then TeamList else StringTeamList)
         end
