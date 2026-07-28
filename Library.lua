@@ -416,16 +416,17 @@ function IsValidCustomIcon(Icon: string)
 end
 
 function Library:GetIcon(IconName: string)
-    if not FetchIcons then
-        return
-    end
+    return nil
+    -- if not FetchIcons then
+    --     return
+    -- end
 
-    local Success, Icon = pcall(Icons.GetAsset, IconName)
-    if not Success then
-        return
-    end
+    -- local Success, Icon = pcall(Icons.GetAsset, IconName)
+    -- if not Success then
+    --     return
+    -- end
 
-    return Icon
+    -- return Icon
 end
 
 function Library:GetCustomIcon(IconName: string)
