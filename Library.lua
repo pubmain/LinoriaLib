@@ -1087,22 +1087,29 @@ function Library:UpdateColorsUsingRegistry()
     end
 end
 
-function Library:GiveSignal(Connection: RBXScriptConnection | RBXScriptSignal) -- Only used for signals not attached to library instances, as those should be cleaned up on object destruction by Roblox
-    local ConnectionType = typeof(Connection)
-    if Connection and (ConnectionType == "RBXScriptConnection" or ConnectionType == "RBXScriptSignal") then
-        table.insert(Library.Signals, Connection)
-    end
+local Threads = {}
+function Library:Thread<A...>(threadOrFunction: thread | (A...) -> (), ...: A...)
+	table.insert(Threads, task.spawn(threadOrFunction, ...))
+end
 
-    return Connection
+function Library:GiveSignal(Connection: RBXScriptConnection | RBXScriptSignal) -- Only used for signals not attached to library instances, as those should be cleaned up on object destruction by Roblox
+    table.insert(Library.Signals, Connection)
+	return Connection
 end
 
 function Library:Unload()
+	InputService.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.None
+
     for Idx = #Library.Signals, 1, -1 do
         local Connection = table.remove(Library.Signals, Idx)
         if Connection and Connection.Connected then
             Connection:Disconnect()
         end
     end
+
+	for _, thread in Threads do
+		task.cancel(thread)
+	end
 
     for _, UnloadCallback in Library.UnloadSignals do
         Library:SafeCallback(UnloadCallback)
@@ -7923,6 +7930,11 @@ end
     
     function Window:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end
+		if Toggling then
+			InputService.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.ForceShow
+		else
+			InputService.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.None
+		end
 
         local FadeTime = WindowInfo.MenuFadeTime
         Toggled = (not Toggled)
