@@ -7930,14 +7930,14 @@ end
     
     function Window:Toggle(Toggling)
         if typeof(Toggling) == "boolean" and Toggling == Toggled then return end
-		if Toggling then
+
+        local FadeTime = WindowInfo.MenuFadeTime
+        Toggled = (not Toggled)
+		if Toggled then
 			InputService.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.ForceShow
 		else
 			InputService.OverrideMouseIconBehavior = Enum.OverrideMouseIconBehavior.None
 		end
-
-        local FadeTime = WindowInfo.MenuFadeTime
-        Toggled = (not Toggled)
 
         Library.Toggled = Toggled
         if WindowInfo.UnlockMouseWhileOpen then
